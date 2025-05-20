@@ -5,10 +5,5 @@
   box-sizing: border-box;
 }
 
-body {
-  font-family: Arial, sans-serif;
-  line-height: 1.6;
-  color: #333;
-}
-
-/* Global styles will be added here */ 
+/* Global styles will be added here */
+/* Body styles are now handled in App.vue for theming */ 
