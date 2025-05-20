@@ -1,34 +1,19 @@
 <script setup>
-import { ref, onMounted, computed } from 'vue';
-import BookService from './BookService.js';
+import { onMounted, computed } from 'vue';
 import { useThemeStore } from './stores/themeStore';
-
-const book = ref(null);
-const isLoading = ref(false);
-const error = ref(null);
+import { useBookStore } from './stores/bookStore'; // Import book store
+import LibraryView from './views/LibraryView.vue';
+import ReaderView from './views/ReaderView.vue';
 
 const themeStore = useThemeStore();
+const bookStore = useBookStore(); // Use the book store
 
 const currentTheme = computed(() => themeStore.currentTheme);
-
-async function fetchBook() {
-  isLoading.value = true;
-  error.value = null;
-  try {
-    // For now, we'll hardcode loading 'book-1'
-    const data = await BookService.loadBookById('book-1');
-    book.value = data;
-  } catch (err) {
-    console.error('Failed to load book in component:', err);
-    error.value = 'Failed to load book. Please try again later.';
-  } finally {
-    isLoading.value = false;
-  }
-}
+const showReaderView = computed(() => bookStore.isBookSelected);
 
 onMounted(() => {
-  fetchBook();
   themeStore.initializeTheme();
+  // Book manifest will be fetched by LibraryView if needed
 });
 
 </script>
@@ -43,25 +28,8 @@ onMounted(() => {
     </header>
 
     <main>
-      <div v-if="isLoading" class="loading">
-        <p>Loading book...</p>
-      </div>
-      <div v-else-if="error" class="error">
-        <p>{{ error }}</p>
-      </div>
-      <div v-else-if="book" class="book-display">
-        <h2>{{ book.title }}</h2>
-        <p class="author">By: {{ book.author }} ({{ book.year }})</p>
-        <img v-if="book.coverImage" :src="book.coverImage" :alt="`Cover of ${book.title}`" class="cover-image">
-        <div class="paragraphs">
-          <p v-for="(paragraph, index) in book.paragraphs" :key="index">
-            {{ paragraph }}
-          </p>
-        </div>
-      </div>
-      <div v-else>
-        <p>Welcome to ReadiT, your personal book reading companion! No book loaded yet.</p>
-      </div>
+      <ReaderView v-if="showReaderView" />
+      <LibraryView v-else />
     </main>
 
     <footer>
@@ -71,7 +39,52 @@ onMounted(() => {
 </template>
 
 <style>
-/* App.vue specific styles, can also be in style.css */
+/* Global styles for :root (CSS variables for themes) and body are here */
+/* They affect LibraryView and ReaderView as well */
+
+/* Light theme (default) */
+:root,
+:root.theme-light {
+  --bg-color: #ffffff;
+  --text-color: #333333;
+  --header-bg: #2c3e50;
+  --header-text: #ffffff;
+  --footer-bg: #2c3e50;
+  --footer-text: #ffffff;
+  --button-bg: #4CAF50;
+  --button-text: #ffffff;
+  --author-text: #555;
+  --cover-border: #ddd;
+  --cover-shadow: rgba(0, 0, 0, 0.1);
+}
+
+/* Dark theme */
+:root.theme-dark {
+  --bg-color: #1a1a1a;
+  --text-color: #e0e0e0;
+  --header-bg: #1f2937;
+  /* Darker blue-gray */
+  --header-text: #e0e0e0;
+  --footer-bg: #1f2937;
+  --footer-text: #e0e0e0;
+  --button-bg: #5cb85c;
+  /* Lighter green for dark mode */
+  --button-text: #1a1a1a;
+  --author-text: #aaa;
+  --cover-border: #444;
+  --cover-shadow: rgba(255, 255, 255, 0.1);
+}
+
+/* Apply theme variables */
+body {
+  background-color: var(--bg-color);
+  color: var(--text-color);
+  font-family: Arial, sans-serif;
+  line-height: 1.6;
+  margin: 0; /* Ensure no default body margin */
+  padding: 0; /* Ensure no default body padding */
+}
+
 .app {
   min-height: 100vh;
   display: flex;
@@ -89,11 +102,11 @@ header {
 
 main {
   flex: 1;
-  padding: 2rem;
-  max-width: 800px; /* Adjusted for better readability of book content */
+  padding: 1rem; /* Reduced padding for more space for views */
+  max-width: 1000px; /* Slightly wider for library view */
   margin: 0 auto;
   width: 100%;
-  background-color: var(--bg-color);
+  /* background-color: var(--bg-color); No longer needed here, body/app handles it */
 }
 
 footer {
@@ -101,48 +114,6 @@ footer {
   color: var(--footer-text);
   padding: 1rem;
   text-align: center;
-}
-
-.loading,
-.error {
-  text-align: center;
-  padding: 2rem;
-  font-size: 1.2em;
-}
-
-.error p {
-  color: red;
-}
-
-.book-display {
-  margin-top: 1rem;
-}
-
-.book-display h2 {
-  margin-bottom: 0.5rem;
-  font-size: 2em;
-}
-
-.book-display .author {
-  font-style: italic;
-  color: var(--author-text);
-  margin-bottom: 1rem;
-}
-
-.book-display .cover-image {
-  display: block;
-  max-width: 250px;
-  height: auto;
-  margin: 0 auto 1.5rem auto;
-  border: 1px solid var(--cover-border);
-  box-shadow: 2px 2px 5px var(--cover-shadow);
-}
-
-.book-display .paragraphs p {
-  margin-bottom: 1em;
-  line-height: 1.6;
-  text-align: justify;
-  color: var(--text-color);
 }
 
 .theme-toggle-button {
@@ -162,45 +133,17 @@ footer {
   right: 10px;
 }
 
-/* Light theme (default) */
-:root, :root.theme-light {
-  --bg-color: #ffffff;
-  --text-color: #333333;
-  --header-bg: #2c3e50;
-  --header-text: #ffffff;
-  --footer-bg: #2c3e50;
-  --footer-text: #ffffff;
-  --button-bg: #4CAF50;
-  --button-text: #ffffff;
-  --author-text: #555;
-  --cover-border: #ddd;
-  --cover-shadow: rgba(0,0,0,0.1);
-}
-
-/* Dark theme */
-:root.theme-dark {
-  --bg-color: #1a1a1a;
-  --text-color: #e0e0e0;
-  --header-bg: #1f2937; /* Darker blue-gray */
-  --header-text: #e0e0e0;
-  --footer-bg: #1f2937;
-  --footer-text: #e0e0e0;
-  --button-bg: #5cb85c; /* Lighter green for dark mode */
-  --button-text: #1a1a1a;
-  --author-text: #aaa;
-  --cover-border: #444;
-  --cover-shadow: rgba(255,255,255,0.1);
-}
-
-/* Apply theme variables */
-body {
-  background-color: var(--bg-color);
+/* Generic loading/error styles that can be used by views if not overridden */
+.loading,
+.error {
+  text-align: center;
+  padding: 2rem;
+  font-size: 1.2em;
   color: var(--text-color);
-  font-family: Arial, sans-serif;
-  line-height: 1.6;
 }
 
-/* Reset some global styles from style.css if they conflict, or move them here */
-/* For example, if style.css set a body color, it would be overridden by body styles here */
+.error p {
+  color: red; /* Standard error color */
+}
 
 </style>
