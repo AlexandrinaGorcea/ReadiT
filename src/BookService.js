@@ -3,13 +3,27 @@ const BookService = {
     try {
       const response = await fetch(`/books/${bookId}.json`);
       if (!response.ok) {
-        throw new Error(`HTTP error! status: ${response.status}`);
+        throw new Error(`HTTP error! status: ${response.status} for ${bookId}.json`);
       }
       const data = await response.json();
       return data;
     } catch (error) {
-      console.error("Error loading book:", error);
-      throw error; // Re-throw to allow the component to handle it
+      console.error(`Error loading book ${bookId}:`, error);
+      throw error;
+    }
+  },
+
+  async loadBookManifest() {
+    try {
+      const response = await fetch(`/books/manifest.json`);
+      if (!response.ok) {
+        throw new Error(`HTTP error! status: ${response.status} for manifest.json`);
+      }
+      const data = await response.json();
+      return data;
+    } catch (error) {
+      console.error("Error loading book manifest:", error);
+      throw error;
     }
   }
 };
