@@ -7,7 +7,10 @@
     :style="{ fontSize: themeStore.readerFontSize }"
   >
     <ReaderControls />
-    <button @click="goBackToLibrary" class="back-button">&larr; Back to Library</button>
+    <div class="reader-actions">
+        <button @click="goBackToLibrary" class="back-button">&larr; Back to Library</button>
+        <button @click="addCurrentPageBookmark" class="bookmark-button" title="Bookmark this page">&#128278; Bookmark</button> 
+    </div>
     <div v-if="bookStore.isLoadingBook" class="loading">
       <p>Loading book content...</p>
     </div>
@@ -34,6 +37,7 @@
           {{ paragraph }}
         </p>
       </div>
+      <BookmarkList @navigate-to-paragraph="scrollToParagraph" />
     </div>
     <div v-else class="no-book-selected">
       <p>No book selected, or book data is missing.</p>
@@ -46,9 +50,12 @@ import { computed, onMounted, onBeforeUpdate, onUnmounted, ref, nextTick, watch 
 import { useBookStore } from '../stores/bookStore';
 import { useThemeStore } from '../stores/themeStore';
 import ReaderControls from '../components/ReaderControls.vue';
+import { useBookmarkStore } from '../stores/bookmarkStore';
+import BookmarkList from '../components/BookmarkList.vue';
 
 const bookStore = useBookStore();
 const themeStore = useThemeStore();
+const bookmarkStore = useBookmarkStore();
 
 const bookData = computed(() => bookStore.currentBookData);
 const readerViewRef = ref(null);
@@ -89,8 +96,10 @@ watch(bookData, async (newData, oldData) => {
     await nextTick();
     await initializeScrollRestoration();
     setupIntersectionObserver();
+    await bookmarkStore.loadBookmarks(newData.id);
   } else if (!newData && oldData) {
     if (observer) observer.disconnect();
+    bookmarkStore.clearCurrentBookBookmarks();
   }
 }, { immediate: false });
 
@@ -136,6 +145,7 @@ onMounted(async () => {
   if (bookData.value) {
     await initializeScrollRestoration();
     setupIntersectionObserver();
+    await bookmarkStore.loadBookmarks(bookData.value.id);
   }
 });
 
@@ -148,6 +158,24 @@ onUnmounted(() => {
 
 async function goBackToLibrary() {
   await bookStore.deselectBook();
+}
+
+async function addCurrentPageBookmark() {
+  if (!bookData.value || !bookData.value.id) {
+    alert('Cannot add bookmark: No book loaded.');
+    return;
+  }
+  const paragraphIndex = bookStore.currentParagraphIndex;
+  try {
+    await bookmarkStore.addBookmark({
+      bookId: bookData.value.id,
+      paragraphIndex: paragraphIndex,
+    });
+    alert(`Bookmarked Paragraph ${paragraphIndex + 1}`);
+  } catch (error) {
+    alert('Failed to add bookmark. See console for details.');
+    console.error("Error adding bookmark from ReaderView:", error);
+  }
 }
 </script>
 
@@ -176,6 +204,14 @@ async function goBackToLibrary() {
   --reader-text-color: #e0e0e0;
 }
 
+.reader-actions {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 1rem;
+  padding: 0 0.5rem;
+}
+
 .back-button {
   background-color: var(--button-bg);
   color: var(--button-text);
@@ -184,15 +220,25 @@ async function goBackToLibrary() {
   border-radius: 4px;
   cursor: pointer;
   font-size: 0.9em;
-  margin-bottom: 1.5rem;
   transition: background-color 0.2s ease;
-  position: sticky;
-  top: 10px;
-  left: 10px;
-  z-index: 10;
 }
 
 .back-button:hover {
+  opacity: 0.9;
+}
+
+.bookmark-button {
+  background-color: var(--button-bg);
+  color: var(--button-text);
+  border: none;
+  padding: 0.5rem 1rem;
+  border-radius: 4px;
+  cursor: pointer;
+  font-size: 0.9em;
+  transition: background-color 0.2s ease;
+}
+
+.bookmark-button:hover {
   opacity: 0.9;
 }
 

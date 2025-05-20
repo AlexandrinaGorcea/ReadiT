@@ -1,8 +1,9 @@
 import { openDB } from 'idb';
 
 const DB_NAME = 'readit-db';
-const DB_VERSION = 1;
+const DB_VERSION = 2;
 const READING_STATES_STORE = 'readingStates';
+const BOOKMARKS_STORE = 'bookmarks';
 
 let dbPromise;
 
@@ -11,10 +12,18 @@ function getDbPromise() {
     dbPromise = openDB(DB_NAME, DB_VERSION, {
       upgrade(db, oldVersion, newVersion, transaction) {
         console.log(`Upgrading DB from version ${oldVersion} to ${newVersion}`);
-        if (!db.objectStoreNames.contains(READING_STATES_STORE)) {
-          const store = db.createObjectStore(READING_STATES_STORE, { keyPath: 'bookId' });
-          // store.createIndex('lastUpdated', 'lastUpdated'); // Optional index
-          console.log(`Object store ${READING_STATES_STORE} created.`);
+        if (oldVersion < 1) {
+          if (!db.objectStoreNames.contains(READING_STATES_STORE)) {
+            db.createObjectStore(READING_STATES_STORE, { keyPath: 'bookId' });
+            console.log(`Object store ${READING_STATES_STORE} created.`);
+          }
+        }
+        if (oldVersion < 2) {
+          if (!db.objectStoreNames.contains(BOOKMARKS_STORE)) {
+            const bookmarkStore = db.createObjectStore(BOOKMARKS_STORE, { keyPath: 'id', autoIncrement: true });
+            bookmarkStore.createIndex('by-bookId', 'bookId', { unique: false });
+            console.log(`Object store ${BOOKMARKS_STORE} created with index by-bookId.`);
+          }
         }
         // Handle other version upgrades here if needed in the future
       },
@@ -69,6 +78,56 @@ export const dbService = {
       console.log(`Deleted reading state for ${bookId} from IndexedDB.`);
     } catch (error) {
       console.error(`Error deleting reading state for ${bookId}:`, error);
+    }
+  },
+
+  async addBookmark(bookmarkData) {
+    try {
+      const db = await getDbPromise();
+      const tx = db.transaction(BOOKMARKS_STORE, 'readwrite');
+      const store = tx.objectStore(BOOKMARKS_STORE);
+      const bookmark = {
+        ...bookmarkData,
+        type: bookmarkData.type || 'bookmark',
+        createdAt: new Date().toISOString(),
+      };
+      const id = await store.add(bookmark);
+      await tx.done;
+      console.log(`Bookmark added with id ${id} for book ${bookmarkData.bookId}`);
+      return { ...bookmark, id };
+    } catch (error) {
+      console.error("Error adding bookmark:", error);
+      throw error;
+    }
+  },
+
+  async getBookmarksForBook(bookId) {
+    if (!bookId) return [];
+    try {
+      const db = await getDbPromise();
+      const tx = db.transaction(BOOKMARKS_STORE, 'readonly');
+      const store = tx.objectStore(BOOKMARKS_STORE);
+      const index = store.index('by-bookId');
+      const bookmarks = await index.getAll(bookId);
+      await tx.done;
+      return bookmarks.sort((a, b) => a.paragraphIndex - b.paragraphIndex);
+    } catch (error) {
+      console.error(`Error getting bookmarks for ${bookId}:`, error);
+      return [];
+    }
+  },
+
+  async deleteBookmark(bookmarkId) {
+    try {
+      const db = await getDbPromise();
+      const tx = db.transaction(BOOKMARKS_STORE, 'readwrite');
+      const store = tx.objectStore(BOOKMARKS_STORE);
+      await store.delete(bookmarkId);
+      await tx.done;
+      console.log(`Bookmark with id ${bookmarkId} deleted.`);
+    } catch (error) {
+      console.error(`Error deleting bookmark ${bookmarkId}:`, error);
+      throw error;
     }
   },
 };
