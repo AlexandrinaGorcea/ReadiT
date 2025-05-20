@@ -51,7 +51,6 @@ const bookStore = useBookStore();
 const themeStore = useThemeStore();
 
 const bookData = computed(() => bookStore.currentBookData);
-
 const readerViewRef = ref(null);
 const paragraphsContainerRef = ref(null);
 const paragraphRefs = ref([]);
@@ -63,9 +62,9 @@ onBeforeUpdate(() => {
   paragraphRefs.value = [];
 });
 
-function initializeScrollRestoration() {
+async function initializeScrollRestoration() {
   if (bookData.value && bookData.value.id) {
-    const restoredIndex = bookStore.restoreProgress(bookData.value.id);
+    const restoredIndex = await bookStore.restoreProgressFromDB(bookData.value.id);
     if (restoredIndex > 0) {
       scrollToParagraph(restoredIndex, 'auto');
     }
@@ -76,32 +75,31 @@ function scrollToParagraph(index, behavior = 'smooth') {
   nextTick(() => {
     const targetParagraph = paragraphRefs.value[index];
     if (targetParagraph && readerViewRef.value) {
-        const offsetTop = targetParagraph.offsetTop - readerViewRef.value.offsetTop;
-        readerViewRef.value.scrollTo({
-            top: offsetTop,
-            behavior: behavior
-        });
+      const offsetTop = targetParagraph.offsetTop - readerViewRef.value.offsetTop;
+      readerViewRef.value.scrollTo({
+        top: offsetTop,
+        behavior: behavior
+      });
     }
   });
 }
 
-watch(bookData, (newData, oldData) => {
+watch(bookData, async (newData, oldData) => {
   if (newData && (!oldData || newData.id !== oldData.id)) {
-    nextTick(() => {
-        initializeScrollRestoration();
-        setupIntersectionObserver();
-    });
+    await nextTick();
+    await initializeScrollRestoration();
+    setupIntersectionObserver();
+  } else if (!newData && oldData) {
+    if (observer) observer.disconnect();
   }
 }, { immediate: false });
 
 const handleScroll = () => {
-  if (!paragraphsContainerRef.value || !bookData.value) return;
+  if (!paragraphsContainerRef.value || !bookData.value || !bookData.value.id) return;
 
   clearTimeout(debounceTimer);
   debounceTimer = setTimeout(() => {
-    if (bookData.value && bookData.value.id) {
-        bookStore.saveProgress(bookData.value.id, bookStore.currentParagraphIndex);
-    }
+    bookStore.updateReadingProgress(bookData.value.id, bookStore.currentParagraphIndex);
   }, 500);
 };
 
@@ -109,7 +107,9 @@ function setupIntersectionObserver() {
   if (observer) {
     observer.disconnect();
   }
-  if (!paragraphsContainerRef.value || paragraphRefs.value.length === 0) return;
+  if (!readerViewRef.value || !paragraphRefs.value || paragraphRefs.value.length === 0) {
+    return;
+  }
 
   const options = {
     root: readerViewRef.value,
@@ -122,7 +122,7 @@ function setupIntersectionObserver() {
       if (entry.isIntersecting) {
         const paragraphId = entry.target.id;
         const index = parseInt(paragraphId.split('-')[1]);
-        bookStore.currentParagraphIndex = index; 
+        bookStore.currentParagraphIndex = index;
       }
     });
   }, options);
@@ -132,13 +132,10 @@ function setupIntersectionObserver() {
   });
 }
 
-onMounted(() => {
-    if (bookData.value) {
-        initializeScrollRestoration();
-        setupIntersectionObserver();
-    }
-  if (readerViewRef.value) {
-    // Scroll listener is already attached via @scroll on template
+onMounted(async () => {
+  if (bookData.value) {
+    await initializeScrollRestoration();
+    setupIntersectionObserver();
   }
 });
 
@@ -149,11 +146,8 @@ onUnmounted(() => {
   clearTimeout(debounceTimer);
 });
 
-function goBackToLibrary() {
-  if (bookData.value && bookData.value.id) {
-      bookStore.saveProgress(bookData.value.id, bookStore.currentParagraphIndex);
-  }
-  bookStore.deselectBook();
+async function goBackToLibrary() {
+  await bookStore.deselectBook();
 }
 </script>
 
