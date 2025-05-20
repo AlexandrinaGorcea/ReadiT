@@ -4,5 +4,17 @@
     "title": "A Journey to the Unknown",
     "author": "Alex Writer",
     "coverImage": "/images/covers/book-1-cover.jpg"
+  },
+  {
+    "id": "pride-and-prejudice",
+    "title": "Pride and Prejudice",
+    "author": "Jane Austen",
+    "coverImage": "/images/covers/pride-and-prejudice-cover.jpg"
+  },
+  {
+    "id": "romeo-and-juliet",
+    "title": "Romeo and Juliet",
+    "author": "William Shakespeare",
+    "coverImage": "/images/covers/romeo-and-juliet-cover.jpg"
   }
 ] 
