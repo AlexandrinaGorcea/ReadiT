@@ -1,5 +1,12 @@
 <template>
-  <div class="reader-view" ref="readerViewRef" @scroll.passive="handleScroll">
+  <div 
+    class="reader-view" 
+    ref="readerViewRef" 
+    @scroll.passive="handleScroll"
+    :class="[themeStore.readerAppearanceClass]" 
+    :style="{ fontSize: themeStore.readerFontSize }"
+  >
+    <ReaderControls />
     <button @click="goBackToLibrary" class="back-button">&larr; Back to Library</button>
     <div v-if="bookStore.isLoadingBook" class="loading">
       <p>Loading book content...</p>
@@ -37,18 +44,21 @@
 <script setup>
 import { computed, onMounted, onBeforeUpdate, onUnmounted, ref, nextTick, watch } from 'vue';
 import { useBookStore } from '../stores/bookStore';
+import { useThemeStore } from '../stores/themeStore';
+import ReaderControls from '../components/ReaderControls.vue';
 
 const bookStore = useBookStore();
+const themeStore = useThemeStore();
+
 const bookData = computed(() => bookStore.currentBookData);
 
-const readerViewRef = ref(null); // Ref for the main scrollable div
-const paragraphsContainerRef = ref(null); // Ref for the paragraphs container
-const paragraphRefs = ref([]); // Refs for individual paragraph elements
+const readerViewRef = ref(null);
+const paragraphsContainerRef = ref(null);
+const paragraphRefs = ref([]);
 
 let observer = null;
 let debounceTimer = null;
 
-// Ensure refs array is cleared before each update (important for v-for)
 onBeforeUpdate(() => {
   paragraphRefs.value = [];
 });
@@ -57,7 +67,7 @@ function initializeScrollRestoration() {
   if (bookData.value && bookData.value.id) {
     const restoredIndex = bookStore.restoreProgress(bookData.value.id);
     if (restoredIndex > 0) {
-      scrollToParagraph(restoredIndex, 'auto'); // 'auto' for instant scroll
+      scrollToParagraph(restoredIndex, 'auto');
     }
   }
 }
@@ -66,7 +76,6 @@ function scrollToParagraph(index, behavior = 'smooth') {
   nextTick(() => {
     const targetParagraph = paragraphRefs.value[index];
     if (targetParagraph && readerViewRef.value) {
-        // Calculate offset relative to the readerViewRef scroll container
         const offsetTop = targetParagraph.offsetTop - readerViewRef.value.offsetTop;
         readerViewRef.value.scrollTo({
             top: offsetTop,
@@ -76,32 +85,25 @@ function scrollToParagraph(index, behavior = 'smooth') {
   });
 }
 
-// Watch for bookData to change (e.g., new book selected) to re-initialize
 watch(bookData, (newData, oldData) => {
   if (newData && (!oldData || newData.id !== oldData.id)) {
-    nextTick(() => { // Ensure DOM is updated
+    nextTick(() => {
         initializeScrollRestoration();
         setupIntersectionObserver();
     });
   }
-}, { immediate: false }); // Don't run immediately, wait for mount and data load
-
+}, { immediate: false });
 
 const handleScroll = () => {
   if (!paragraphsContainerRef.value || !bookData.value) return;
 
-  // Simple scroll detection without IntersectionObserver for debouncing save
-  // More accurate paragraph detection will be handled by IntersectionObserver
   clearTimeout(debounceTimer);
   debounceTimer = setTimeout(() => {
-    // The actual current paragraph index should be updated by the observer
-    // This just triggers a save with the last known index from the store
     if (bookData.value && bookData.value.id) {
         bookStore.saveProgress(bookData.value.id, bookStore.currentParagraphIndex);
     }
-  }, 500); // Debounce saving for 500ms
+  }, 500);
 };
-
 
 function setupIntersectionObserver() {
   if (observer) {
@@ -110,9 +112,9 @@ function setupIntersectionObserver() {
   if (!paragraphsContainerRef.value || paragraphRefs.value.length === 0) return;
 
   const options = {
-    root: readerViewRef.value, // Scrollable area
+    root: readerViewRef.value,
     rootMargin: '0px',
-    threshold: 0.5 // Trigger when 50% of the paragraph is visible
+    threshold: 0.5
   };
 
   observer = new IntersectionObserver((entries) => {
@@ -120,8 +122,6 @@ function setupIntersectionObserver() {
       if (entry.isIntersecting) {
         const paragraphId = entry.target.id;
         const index = parseInt(paragraphId.split('-')[1]);
-        // Update store, but don't trigger a save immediately from here to avoid loops
-        // The debounced saveProgress on scroll will handle saving.
         bookStore.currentParagraphIndex = index; 
       }
     });
@@ -133,11 +133,10 @@ function setupIntersectionObserver() {
 }
 
 onMounted(() => {
-    if (bookData.value) { // If book data is already present on mount
+    if (bookData.value) {
         initializeScrollRestoration();
         setupIntersectionObserver();
     }
-  // Listen to scroll on the readerViewRef itself
   if (readerViewRef.value) {
     // Scroll listener is already attached via @scroll on template
   }
@@ -151,7 +150,6 @@ onUnmounted(() => {
 });
 
 function goBackToLibrary() {
-  // Save final position before going back
   if (bookData.value && bookData.value.id) {
       bookStore.saveProgress(bookData.value.id, bookStore.currentParagraphIndex);
   }
@@ -161,11 +159,27 @@ function goBackToLibrary() {
 
 <style scoped>
 .reader-view {
-  padding: 1rem;
+  padding-top: 0;
   color: var(--text-color);
-  overflow-y: auto; /* Make this the scrollable container */
-  height: calc(100vh - 150px); /* Adjust based on header/footer height, make it dynamic if needed */
-  position: relative; /* For Intersection Observer with a specific root */
+  overflow-y: auto;
+  height: calc(100vh - (var(--header-height, 60px) + var(--footer-height, 60px) + var(--controls-height, 50px)));
+  position: relative;
+  background-color: var(--reader-bg-color, var(--bg-color));
+}
+
+.reader-appearance-white {
+  --reader-bg-color: #ffffff;
+  --reader-text-color: #222222;
+}
+
+.reader-appearance-sepia {
+  --reader-bg-color: #fbf0d9;
+  --reader-text-color: #5b4636;
+}
+
+.reader-appearance-dark_reader {
+  --reader-bg-color: #121212;
+  --reader-text-color: #e0e0e0;
 }
 
 .back-button {
@@ -178,6 +192,10 @@ function goBackToLibrary() {
   font-size: 0.9em;
   margin-bottom: 1.5rem;
   transition: background-color 0.2s ease;
+  position: sticky;
+  top: 10px;
+  left: 10px;
+  z-index: 10;
 }
 
 .back-button:hover {
@@ -200,13 +218,15 @@ function goBackToLibrary() {
   margin-bottom: 0.5rem;
   font-size: 2em;
   text-align: center;
+  color: var(--reader-text-color);
 }
 
 .book-content .author {
   font-style: italic;
-  color: var(--author-text);
+  color: var(--reader-text-color);
   margin-bottom: 1rem;
   text-align: center;
+  opacity: 0.85;
 }
 
 .book-content .cover-image {
@@ -222,11 +242,10 @@ function goBackToLibrary() {
   margin-bottom: 1em;
   line-height: 1.6;
   text-align: justify;
+  color: var(--reader-text-color);
 }
 
 .book-paragraph {
-  /* Add some margin/padding if needed for observer to work reliably */
-  /* especially if paragraphs are very short */
-  padding-bottom: 10px; /* Ensure some space for intersection */
+  padding-bottom: 10px;
 }
 </style> 
