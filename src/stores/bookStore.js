@@ -1,6 +1,7 @@
 import { defineStore } from 'pinia';
 import BookService from '../BookService';
 import dbService from '../dbService'; // Import dbService
+import { useBookmarkStore } from './bookmarkStore'; // Import bookmark store
 
 export const useBookStore = defineStore('book', {
   state: () => ({
@@ -38,9 +39,12 @@ export const useBookStore = defineStore('book', {
       }
 
       // If switching from another book, save its progress to DB
-      if (this.selectedBookId && this.currentBookData) {
+      if (this.selectedBookId && this.currentBookData && this.selectedBookId !== bookId) {
         const lastKnownIndex = parseInt(localStorage.getItem(`readit-progress-${this.selectedBookId}`) || this.currentParagraphIndex.toString(), 10);
         await dbService.saveReadingState(this.selectedBookId, lastKnownIndex);
+        // Clear bookmarks for the old book
+        const bookmarkStore = useBookmarkStore();
+        bookmarkStore.clearCurrentBookBookmarks();
       }
 
       this.selectedBookId = bookId;
@@ -53,6 +57,9 @@ export const useBookStore = defineStore('book', {
         const bookData = await BookService.loadBookById(bookId);
         this.currentBookData = bookData;
         await this.restoreProgressFromDB(bookId); // Restore progress for the newly selected book
+        // Load bookmarks for the newly selected book
+        const bookmarkStore = useBookmarkStore();
+        await bookmarkStore.loadBookmarks(bookId);
       } catch (err) {
         console.error(`Failed to load book ${bookId} in store:`, err);
         this.bookError = `Failed to load book: ${err.message || 'Unknown error'}`;
@@ -72,6 +79,9 @@ export const useBookStore = defineStore('book', {
       this.currentBookData = null;
       this.currentParagraphIndex = 0;
       this.bookError = null;
+      // Clear bookmarks when no book is selected
+      const bookmarkStore = useBookmarkStore();
+      bookmarkStore.clearCurrentBookBookmarks();
     },
 
     // LocalStorage for frequent updates within a session
