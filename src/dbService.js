@@ -1,7 +1,7 @@
 import { openDB } from 'idb';
 
 const DB_NAME = 'readit-db';
-const DB_VERSION = 2;
+const DB_VERSION = 3;
 const READING_STATES_STORE = 'readingStates';
 const BOOKMARKS_STORE = 'bookmarks';
 
@@ -24,6 +24,9 @@ function getDbPromise() {
             bookmarkStore.createIndex('by-bookId', 'bookId', { unique: false });
             console.log(`Object store ${BOOKMARKS_STORE} created with index by-bookId.`);
           }
+        }
+        if (oldVersion < 3) {
+          console.log(`DB version 3 upgrade: The ${BOOKMARKS_STORE} store will now accommodate highlight-specific fields.`);
         }
         // Handle other version upgrades here if needed in the future
       },

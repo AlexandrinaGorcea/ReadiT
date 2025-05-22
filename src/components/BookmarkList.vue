@@ -10,10 +10,16 @@
     <ul v-else-if="bookmarkStore.currentBookBookmarks.length > 0" class="bookmarks">
       <li v-for="bookmark in bookmarkStore.currentBookBookmarks" :key="bookmark.id" class="bookmark-item">
         <span @click="goToBookmark(bookmark.paragraphIndex)" class="bookmark-link">
-          Paragraph {{ bookmark.paragraphIndex + 1 }} 
-          <small class="timestamp">({{ formatTimestamp(bookmark.createdAt) }})</small>
+          <template v-if="bookmark.type === 'highlight' && bookmark.highlightedText">
+            <q class="highlighted-text-preview">{{ truncateText(bookmark.highlightedText, 50) }}</q>
+            <small class="timestamp">(P{{ bookmark.paragraphIndex + 1 }} - {{ formatTimestamp(bookmark.createdAt) }})</small>
+          </template>
+          <template v-else>
+            Paragraph {{ bookmark.paragraphIndex + 1 }} 
+            <small class="timestamp">({{ formatTimestamp(bookmark.createdAt) }})</small>
+          </template>
         </span>
-        <button @click="removeBookmark(bookmark.id)" class="delete-bookmark-btn" title="Delete bookmark">&times;</button>
+        <button @click="removeBookmark(bookmark.id)" class="delete-bookmark-btn" title="Delete bookmark/highlight">&times;</button>
       </li>
     </ul>
     <div v-else class="no-bookmarks">
@@ -34,7 +40,7 @@ function goToBookmark(paragraphIndex) {
 }
 
 async function removeBookmark(bookmarkId) {
-  if (confirm("Are you sure you want to delete this bookmark?")) {
+  if (confirm("Are you sure you want to delete this item?")) {
     await bookmarkStore.deleteBookmark(bookmarkId);
   }
 }
@@ -43,6 +49,12 @@ function formatTimestamp(isoString) {
   if (!isoString) return '';
   const date = new Date(isoString);
   return date.toLocaleDateString() + ' ' + date.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+}
+
+function truncateText(text, maxLength) {
+  if (!text) return '';
+  if (text.length <= maxLength) return text;
+  return text.substring(0, maxLength) + '...';
 }
 </script>
 
@@ -123,5 +135,11 @@ function formatTimestamp(isoString) {
 
 .delete-bookmark-btn:hover {
   opacity: 0.7;
+}
+
+.highlighted-text-preview {
+  font-style: italic;
+  color: var(--text-color); /* Or a specific highlight preview color */
+  margin-right: 0.5em;
 }
 </style> 
