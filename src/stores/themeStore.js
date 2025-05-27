@@ -6,10 +6,23 @@ export const useThemeStore = defineStore('theme', {
     // Reader-specific preferences
     readerFontSize: localStorage.getItem('readerFontSize') || '16px',
     readerAppearance: localStorage.getItem('readerAppearance') || 'white', // 'white', 'sepia', 'dark_reader'
+    readerHighlightColor: localStorage.getItem('readerHighlightColor') || 'yellow', // Default highlight color
   }),
   getters: {
+    isDarkMode: (state) => state.currentTheme === 'dark',
     // Getter to apply a class to the reader view container for appearance
     readerAppearanceClass: (state) => `reader-appearance-${state.readerAppearance}`,
+    availableHighlightColors: () => [ // Predefined list of highlight colors
+      { name: 'yellow', hex: '#fff176' }, // A lighter yellow
+      { name: 'green', hex: '#a5d6a7' },  // A light green
+      { name: 'blue', hex: '#90caf9' },   // A light blue
+      { name: 'pink', hex: '#f48fb1' },   // A light pink
+      { name: 'purple', hex: '#ce93d8' }  // A light purple
+    ],
+    currentHighlightColorHex: (state) => {
+      const foundColor = useThemeStore().availableHighlightColors.find(c => c.name === state.readerHighlightColor);
+      return foundColor ? foundColor.hex : '#fff176'; // Default to yellow if not found
+    }
   },
   actions: {
     // Main app theme
@@ -40,6 +53,15 @@ export const useThemeStore = defineStore('theme', {
       this.readerAppearance = appearance;
       localStorage.setItem('readerAppearance', appearance);
       // Applying appearance class will be handled by a class binding in ReaderView
+    },
+    setReaderHighlightColor(colorName) {
+      const validColor = this.availableHighlightColors.find(c => c.name === colorName);
+      if (validColor) {
+        this.readerHighlightColor = colorName;
+        localStorage.setItem('readerHighlightColor', colorName);
+      } else {
+        console.warn(`Invalid highlight color: ${colorName}`);
+      }
     },
     // Helper to cycle through font sizes or appearances if needed, or set directly
     // Example: cycleFontSize() { ... }

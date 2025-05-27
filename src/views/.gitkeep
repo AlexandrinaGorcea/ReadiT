@@ -1,1 +1,4 @@
- 
+function selectBook(bookId) {
+  bookStore.selectBook(bookId);
+  // App.vue will handle switching to ReaderView based on store state
+} 

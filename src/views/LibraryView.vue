@@ -14,8 +14,10 @@
       <div v-for="book in bookStore.books" :key="book.id" class="book-card" @click="selectBook(book.id)">
         <img v-if="book.coverImage" :src="book.coverImage" :alt="`Cover of ${book.title}`" class="book-cover">
         <div v-else class="book-cover-placeholder">No Cover</div>
-        <h3>{{ book.title }}</h3>
-        <p>{{ book.author }}</p>
+        <div class="book-info">
+          <h3>{{ book.title }}</h3>
+          <p>{{ book.author }}</p>
+        </div>
       </div>
     </div>
   </div>
@@ -24,8 +26,10 @@
 <script setup>
 import { onMounted } from 'vue';
 import { useBookStore } from '../stores/bookStore';
+import { useRouter } from 'vue-router';
 
 const bookStore = useBookStore();
+const router = useRouter();
 
 onMounted(() => {
   // Fetch manifest only if books array is empty
@@ -36,19 +40,20 @@ onMounted(() => {
 
 function selectBook(bookId) {
   bookStore.selectBook(bookId);
-  // App.vue will handle switching to ReaderView based on store state
+  router.push({ name: 'Reader', params: { bookId: bookId } });
 }
 </script>
 
 <style scoped>
 .library-view {
-  padding: 1rem;
+  padding: 1rem 2rem;
 }
 
 .library-view h2 {
   text-align: center;
-  margin-bottom: 1.5rem;
-  font-size: 1.8em;
+  margin-bottom: 2rem;
+  font-size: 2em;
+  font-weight: 600;
   color: var(--text-color);
 }
 
@@ -67,63 +72,63 @@ function selectBook(bookId) {
 
 .book-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
-  gap: 1.5rem;
+  grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+  gap: 2rem;
 }
 
 .book-card {
-  border: 1px solid var(--cover-border);
   border-radius: 8px;
-  padding: 1rem;
-  text-align: center;
+  text-align: left;
   cursor: pointer;
   transition: transform 0.2s ease-in-out, box-shadow 0.2s ease-in-out;
-  background-color: var(--bg-color);
-  box-shadow: 0 2px 4px var(--cover-shadow);
+  background-color: var(--secondary-bg-color, var(--bg-color));
+  box-shadow: 0 4px 6px rgba(0,0,0,0.05);
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
 }
 
 .book-card:hover {
-  transform: translateY(-5px);
-  box-shadow: 0 4px 8px var(--cover-shadow);
+  transform: translateY(-6px);
+  box-shadow: 0 8px 12px rgba(0,0,0,0.08);
 }
 
-.book-cover {
+.book-cover, .book-cover-placeholder {
   width: 100%;
-  max-width: 150px;
   height: auto;
-  aspect-ratio: 2 / 3; /* Maintain aspect ratio for covers */
+  aspect-ratio: 2 / 3;
   object-fit: cover;
-  border-radius: 4px;
-  margin-bottom: 0.75rem;
-  background-color: #f0f0f0; /* Fallback for missing images */
+  border-radius: 0;
+  background-color: #e0e0e0;
+  border-bottom: 1px solid var(--border-color);
 }
 
 .book-cover-placeholder {
-  width: 100%;
-  max-width: 150px;
-  height: 225px; /* Approx 2/3 aspect ratio for 150px width */
   display: flex;
   align-items: center;
   justify-content: center;
-  background-color: #e0e0e0;
   color: #757575;
-  font-size: 0.9em;
-  border-radius: 4px;
-  margin-bottom: 0.75rem;
+  font-size: 1em;
+}
+
+.book-info {
+  padding: 0.75rem 1rem;
 }
 
 .book-card h3 {
-  font-size: 1.1em;
-  margin-bottom: 0.25rem;
+  font-size: 1rem;
+  font-weight: 600;
+  margin-bottom: 0.2rem;
   color: var(--text-color);
-  /* Truncate long titles */
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
+  line-height: 1.3;
 }
 
 .book-card p {
-  font-size: 0.9em;
+  font-size: 0.85rem;
   color: var(--author-text);
+  line-height: 1.3;
 }
 </style> 
