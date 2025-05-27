@@ -6,4 +6,101 @@
 }
 
 /* Global styles will be added here */
+
+/* Define CSS variables for theming */
+:root {
+  /* Light Theme (Default) */
+  --bg-color: #ffffff;
+  --secondary-bg-color: #f7f7f7; /* Added for cards etc. */
+  --text-color: #213547;
+  --primary-color: #42b983;
+  --secondary-color: #f0f0f0;
+  --border-color: #cccccc;
+  --cover-border: #e0e0e0;
+  --cover-shadow: rgba(0, 0, 0, 0.1);
+  --author-text: #555555;
+  --button-bg: #42b983;
+  --button-text: #ffffff;
+  --controls-bg: #f9f9f9;
+  --controls-border: #e0e0e0;
+  --tooltip-bg: #333333;
+  --tooltip-text: #ffffff;
+  --tooltip-button-bg: var(--primary-color);
+  --tooltip-button-text: #ffffff;
+  --tooltip-button-hover-bg: var(--primary-color);
+
+  /* Component specific variables (can be overridden by components or specific themes) */
+  --header-height: 60px;
+  --footer-height: 60px;
+  --controls-height: 50px; /* For ReaderControls */
+
+  /* Reader specific appearance (defaults, can be overridden by reader themes) */
+  --reader-bg-color: var(--bg-color); /* Default to main bg */
+  --reader-text-color: var(--text-color); /* Default to main text color */
+
+  font-family: Inter, system-ui, Avenir, Helvetica, Arial, sans-serif;
+  line-height: 1.5;
+  font-weight: 400;
+
+  color-scheme: light;
+  font-synthesis: none;
+  text-rendering: optimizeLegibility;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+html.theme-dark {
+  /* Dark Theme */
+  --bg-color: #1a1a1a; /* Darker background */
+  --secondary-bg-color: #242424; /* Added for cards etc. */
+  --text-color: rgba(255, 255, 255, 0.87);
+  --primary-color: #3ba776; /* Slightly desaturated green for dark mode */
+  --secondary-color: #2d2d2d;
+  --border-color: #303030; /* Made border color darker for dark theme */
+  --cover-border: #333333;
+  --cover-shadow: rgba(0, 0, 0, 0.3);
+  --author-text: #bbbbbb;
+  --button-bg: #3ba776;
+  --button-text: #ffffff;
+  --controls-bg: #242424;
+  --controls-border: #3a3a3a;
+  --tooltip-bg: #eeeeee;
+  --tooltip-text: #121212;
+  --tooltip-button-bg: var(--primary-color);
+  --tooltip-button-text: #ffffff;
+  --tooltip-button-hover-bg: var(--primary-color);
+
+  /* Reader specific appearance for dark theme */
+  --reader-bg-color: var(--bg-color); /* Default to main dark bg */
+  --reader-text-color: var(--text-color); /* Default to main dark text color */
+
+  color-scheme: dark;
+}
+
+body {
+  background-color: var(--bg-color);
+  color: var(--text-color);
+  transition: background-color 0.3s ease, color 0.3s ease; 
+  min-height: 100vh; /* Ensure body takes full height */
+}
+
+/* Styles for scrollbar (optional, but enhances dark mode) */
+html.theme-dark ::-webkit-scrollbar {
+  width: 10px;
+}
+
+html.theme-dark ::-webkit-scrollbar-track {
+  background: var(--secondary-color);
+}
+
+html.theme-dark ::-webkit-scrollbar-thumb {
+  background-color: var(--border-color);
+  border-radius: 5px;
+  border: 2px solid var(--secondary-color);
+}
+
+html.theme-dark ::-webkit-scrollbar-thumb:hover {
+  background-color: var(--primary-color);
+}
+
 /* Body styles are now handled in App.vue for theming */ 

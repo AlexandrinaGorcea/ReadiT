@@ -7,6 +7,20 @@ export const useBookmarkStore = defineStore('bookmark', {
     isLoadingBookmarks: false,
     bookmarkError: null,
   }),
+  getters: {
+    // Get only items of type 'bookmark'
+    bookmarks: (state) => state.currentBookBookmarks.filter(item => !item.type || item.type === 'bookmark'),
+    
+    // Get only items of type 'highlight'
+    highlights: (state) => state.currentBookBookmarks.filter(item => item.type === 'highlight'),
+    
+    // Get highlights for a specific paragraph
+    highlightsForParagraph: (state) => (paragraphIndex) => {
+      return state.currentBookBookmarks.filter(
+        item => item.type === 'highlight' && item.paragraphIndex === paragraphIndex
+      );
+    }
+  },
   actions: {
     async loadBookmarks(bookId) {
       if (!bookId) {
