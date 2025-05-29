@@ -70,7 +70,7 @@ onMounted(async () => {
 });
 
 function navigateToBook(bookId) {
-  router.push({ name: 'ReaderView', params: { bookId } });
+  router.push({ name: 'Reader', params: { bookId } });
 }
 </script>
 
