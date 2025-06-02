@@ -28,6 +28,7 @@
   --tooltip-button-bg: var(--primary-color);
   --tooltip-button-text: #ffffff;
   --tooltip-button-hover-bg: var(--primary-color);
+  --progress-track-bg: #e9ecef;
 
   /* Component specific variables (can be overridden by components or specific themes) */
   --header-height: 60px;
@@ -69,6 +70,7 @@ html.theme-dark {
   --tooltip-button-bg: var(--primary-color);
   --tooltip-button-text: #ffffff;
   --tooltip-button-hover-bg: var(--primary-color);
+  --progress-track-bg: #3a3a3a;
 
   /* Reader specific appearance for dark theme */
   --reader-bg-color: var(--bg-color); /* Default to main dark bg */

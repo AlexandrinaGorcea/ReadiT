@@ -89,8 +89,10 @@ watch(() => themeStore.readerFontSize, (newVal) => {
   padding: 0.5rem 1rem;
   background-color: var(--secondary-bg-color);
   border-bottom: 1px solid var(--controls-border);
+  border-top: none;
+  margin-top: 0;
   height: var(--controls-height, 55px);
-  box-shadow: 0 1px 3px rgba(0,0,0,0.03);
+  box-shadow: none;
   position: relative;
   z-index: 10;
 }
