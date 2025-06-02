@@ -27,7 +27,10 @@
         <div class="book-info">
           <h3 class="book-title">{{ book.title }}</h3>
           <p class="book-author">By: {{ book.author }}</p>
-          <p class="book-year">({{ book.year }})</p>
+          <p v-if="String(book.year || '').trim()" class="book-year">({{ book.year }})</p>
+        </div>
+        <div class="book-progress-bar-container">
+          <div class="book-progress-bar" :style="{ width: (book.id === 'pride-and-prejudice' ? '60%' : (book.id === 'romeo-and-juliet' ? '25%' : '0%')) }"></div>
         </div>
       </div>
     </div>
@@ -76,7 +79,7 @@ function navigateToBook(bookId) {
 
 <style scoped>
 .library-view {
-  padding: 1.5rem;
+  padding: var(--header-height, 60px) 1.5rem 1.5rem;
   max-width: 1200px;
   margin: 0 auto;
 }
@@ -85,24 +88,26 @@ function navigateToBook(bookId) {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  margin-bottom: 1.5rem;
+  margin-bottom: 2rem;
 }
 
 .library-header h2 {
   margin: 0;
-  font-size: 2em;
-  font-weight: 600;
+  font-size: 1.8em;
+  font-weight: 500;
   color: var(--text-color);
 }
 
 .filter-input {
-  padding: 0.6rem 0.8rem;
-  border: 1px solid var(--border-color);
-  border-radius: 6px;
+  padding: 0.7rem 1rem;
+  border: 1px solid transparent;
+  border-radius: 8px;
   font-size: 0.95em;
-  background-color: var(--secondary-bg-color);
+  background-color: var(--controls-bg);
   color: var(--text-color);
   min-width: 250px;
+  box-shadow: 0 1px 2px rgba(0,0,0,0.04);
+  transition: border-color 0.2s ease, box-shadow 0.2s ease;
 }
 
 .filter-input:focus {
@@ -113,14 +118,14 @@ function navigateToBook(bookId) {
 
 .book-list {
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+  grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
   gap: 2rem;
 }
 
 .book-card {
   background-color: var(--secondary-bg-color);
-  border-radius: 10px;
-  box-shadow: 0 6px 12px rgba(0, 0, 0, 0.08);
+  border-radius: 12px;
+  box-shadow: 0 2px 4px rgba(0,0,0,0.04), 0 4px 8px rgba(0,0,0,0.08);
   cursor: pointer;
   display: flex;
   flex-direction: column;
@@ -131,7 +136,11 @@ function navigateToBook(bookId) {
 
 .book-card:hover {
   transform: translateY(-5px);
-  box-shadow: 0 10px 20px rgba(0, 0, 0, 0.12);
+  box-shadow: 0 4px 8px rgba(0,0,0,0.06), 0 8px 16px rgba(0,0,0,0.12);
+}
+
+.book-card:hover .book-cover {
+  transform: scale(1.03);
 }
 
 .book-cover {
@@ -140,7 +149,7 @@ function navigateToBook(bookId) {
   background-image: var(--cover-image-url);
   background-size: cover;
   background-position: center;
-  border-bottom: 1px solid var(--border-color);
+  transition: transform 0.2s ease-out;
 }
 
 .book-info {
@@ -158,26 +167,41 @@ function navigateToBook(bookId) {
   margin-bottom: 0.3rem;
   line-height: 1.3;
   display: -webkit-box;
-  -webkit-line-clamp: 2;
+  -webkit-line-clamp: 3;
   -webkit-box-orient: vertical;
   overflow: hidden;
   text-overflow: ellipsis;
-  min-height: 2.6em;
+  min-height: 3.9em;
 }
 
 .book-author {
-  font-size: 0.85em;
+  font-size: 0.8rem;
   color: var(--author-text, var(--text-color));
-  opacity: 0.8;
+  opacity: 0.75;
   margin-bottom: 0.2rem;
   line-height: 1.4;
 }
 
 .book-year {
-  font-size: 0.8em;
+  font-size: 0.75rem;
   color: var(--text-color);
-  opacity: 0.6;
+  opacity: 0.65;
   margin-top: auto;
+}
+
+.book-progress-bar-container {
+  height: 6px;
+  background-color: var(--progress-track-bg);
+  border-radius: 3px;
+  overflow: hidden;
+  margin: 0 1rem 0.75rem 1rem;
+}
+
+.book-progress-bar {
+  height: 100%;
+  background-color: var(--primary-color);
+  border-radius: 3px;
+  transition: width 0.3s ease-in-out;
 }
 
 .loading-books,

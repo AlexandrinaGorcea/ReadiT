@@ -33,7 +33,6 @@ onMounted(() => {
 
 .main-content {
   flex: 1;
-  padding-top: var(--header-height, 60px);
   padding-bottom: var(--footer-height, 60px);
   background-color: var(--secondary-bg-color);
   border: none;

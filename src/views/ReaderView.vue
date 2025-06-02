@@ -592,6 +592,7 @@ watch(() => bookmarkStore.currentBookBookmarks, () => {
 
 <style scoped>
 .reader-view-wrapper {
+  padding-top: var(--header-height, 60px);
   color: var(--reader-text-color);
   position: relative;
   display: flex;
