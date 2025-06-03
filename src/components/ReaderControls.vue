@@ -249,4 +249,8 @@ html.theme-dark .appearance-icon.white-icon {
 .appearance-selector button.active .dark-icon {
   border-color: var(--primary-color);
 }
+
+.reader-footer-bar .bookmark-list-container {
+  color: #fff;
+}
 </style> 

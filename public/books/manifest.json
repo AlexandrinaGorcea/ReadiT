@@ -4,20 +4,23 @@
     "title": "A Journey to the Unknown",
     "author": "Alex Writer",
     "year": 2024,
-    "coverImage": "/images/covers/book-1-cover.jpg"
+    "coverImage": "/images/covers/book-1-cover.jpg",
+    "filePath": "/books/book-1.json"
   },
   {
     "id": "pride-and-prejudice",
     "title": "Pride and Prejudice",
     "author": "Jane Austen",
     "year": 1813,
-    "coverImage": "/images/covers/pride-and-prejudice-cover.jpg"
+    "coverImage": "/images/covers/pride-and-prejudice-cover.jpg",
+    "filePath": "/books/pride-and-prejudice.json"
   },
   {
-    "id": "romeo-and-juliet",
-    "title": "Romeo and Juliet",
+    "id": "romeo-and-juliet-demo",
+    "title": "Romeo and Juliet (Demo)",
     "author": "William Shakespeare",
     "year": 1597,
-    "coverImage": "/images/covers/romeo-and-juliet-cover.jpg"
+    "coverImage": "/images/covers/romeo-and-juliet-cover.jpg",
+    "filePath": "/books/romeo-and-juliet-demo.json"
   }
 ] 

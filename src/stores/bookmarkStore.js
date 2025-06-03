@@ -3,7 +3,7 @@ import dbService from '../dbService';
 
 export const useBookmarkStore = defineStore('bookmark', {
   state: () => ({
-    currentBookBookmarks: [], // Bookmarks for the currently active book
+    currentBookBookmarks: [], // Bookmarks and highlights for the currently active book
     isLoadingBookmarks: false,
     bookmarkError: null,
   }),
@@ -30,7 +30,9 @@ export const useBookmarkStore = defineStore('bookmark', {
       this.isLoadingBookmarks = true;
       this.bookmarkError = null;
       try {
+        // dbService.getBookmarksForBook is now expected to return bookmarks sorted by paragraphIndex
         const bookmarks = await dbService.getBookmarksForBook(bookId);
+        // No specific mapping needed here if dbService handles the format correctly
         this.currentBookBookmarks = bookmarks;
       } catch (err) {
         console.error(`Failed to load bookmarks for ${bookId}:`, err);
@@ -40,14 +42,27 @@ export const useBookmarkStore = defineStore('bookmark', {
         this.isLoadingBookmarks = false;
       }
     },
-    async addBookmark(bookmarkData) { // { bookId, paragraphIndex, note? }
+    async addBookmark(bookmarkData) { // e.g., { bookId, paragraphIndex, type: 'bookmark' or 'highlight', highlightedText?, startOffset?, endOffset? }
       this.bookmarkError = null;
       try {
+        // Ensure paragraphIndex is present for paragraph-based system
+        if (typeof bookmarkData.paragraphIndex !== 'number') {
+          console.error('Attempted to add bookmark without paragraphIndex', bookmarkData);
+          throw new Error('Bookmark data must include a paragraphIndex.');
+        }
+
         const newBookmark = await dbService.addBookmark(bookmarkData);
         if (newBookmark && newBookmark.bookId === bookmarkData.bookId) {
-            // Add to current list if it belongs to the current book and sort
+            // Add to local store and re-sort (dbService already sorted, but if adding locally, good to maintain order)
             this.currentBookBookmarks.push(newBookmark);
-            this.currentBookBookmarks.sort((a, b) => a.paragraphIndex - b.paragraphIndex);
+            this.currentBookBookmarks.sort((a, b) => {
+              const paragraphDiff = (a.paragraphIndex || 0) - (b.paragraphIndex || 0);
+              if (paragraphDiff !== 0) return paragraphDiff;
+              if (a.type === 'highlight' && b.type === 'highlight') {
+                return (a.startOffset || 0) - (b.startOffset || 0);
+              }
+              return 0;
+            });
         }
         return newBookmark;
       } catch (err) {

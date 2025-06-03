@@ -1,0 +1,204 @@
+/* readit-app/src/assets/css/theme.css */
+
+/* Default Reader Appearance (White) */
+.reader-view-wrapper.reader-appearance-white {
+  background-color: #ffffff; /* White background for the entire reader area */
+  color: #121212; /* Dark text for the entire reader area */
+}
+
+/* Ensure reader-content-area also uses this theme */
+.reader-view-wrapper.reader-appearance-white .reader-content-area {
+  background-color: #ffffff; /* Explicitly white */
+  color: #121212;
+}
+
+/* Styles for BookMeta within White reader appearance */
+.reader-view-wrapper.reader-appearance-white .book-meta-reader {
+  /* Assuming the reader-view-wrapper provides the overall background,
+     this area might not need a specific background unless it's different.
+     If it needs to be explicitly white (or same as reader-view-wrapper): */
+  background-color: #ffffff; /* or inherit/transparent if wrapper is already white */
+}
+.reader-view-wrapper.reader-appearance-white .book-meta-reader h2,
+.reader-view-wrapper.reader-appearance-white .book-meta-reader .author {
+  color: #121212; /* Dark text for title and author */
+}
+
+/* Styles for BookmarkList within White reader appearance */
+.reader-view-wrapper.reader-appearance-white .bookmark-list-container {
+  background-color: #f9f9f9; /* Slightly off-white for contrast or use #ffffff */
+  color: #121212;
+  border-top: 1px solid #e0e0e0;
+}
+.reader-view-wrapper.reader-appearance-white .bookmark-list-container h4 {
+  color: #121212;
+}
+.reader-view-wrapper.reader-appearance-white .bookmark-item {
+  color: #121212;
+  border-bottom: 1px solid #e0e0e0;
+}
+.reader-view-wrapper.reader-appearance-white .bookmark-link {
+  color: #007bff; /* Example link color for white theme */
+}
+.reader-view-wrapper.reader-appearance-white .bookmark-link .timestamp,
+.reader-view-wrapper.reader-appearance-white .loading-bookmarks p,
+.reader-view-wrapper.reader-appearance-white .no-bookmarks p,
+.reader-view-wrapper.reader-appearance-white .highlighted-text-preview {
+  color: #555555;
+}
+.reader-view-wrapper.reader-appearance-white .delete-bookmark-btn {
+  color: #757575;
+}
+.reader-view-wrapper.reader-appearance-white .delete-bookmark-btn:hover {
+  color: #d32f2f;
+  background-color: rgba(0, 0, 0, 0.05);
+}
+.reader-view-wrapper.reader-appearance-white .bookmark-item:hover {
+  background-color: rgba(0, 0, 0, 0.03);
+}
+
+/* Sepia Reader Appearance */
+.reader-view-wrapper.reader-appearance-sepia {
+  background-color: #fbf0d9; /* Sepia background for the entire reader area */
+  color: #5b4636; /* Brownish text for the entire reader area */
+}
+
+/* Ensure reader-content-area also uses this theme */
+.reader-view-wrapper.reader-appearance-sepia .reader-content-area {
+  background-color: #fbf0d9; /* Explicitly sepia */
+  color: #5b4636;
+}
+
+/* Styles for BookMeta within Sepia reader appearance */
+.reader-view-wrapper.reader-appearance-sepia .book-meta-reader {
+  background-color: #fbf0d9; /* Match reader background */
+}
+.reader-view-wrapper.reader-appearance-sepia .book-meta-reader h2,
+.reader-view-wrapper.reader-appearance-sepia .book-meta-reader .author {
+  color: #5b4636; /* Brownish text for title and author */
+}
+
+/* Styles for BookmarkList within Sepia reader appearance */
+.reader-view-wrapper.reader-appearance-sepia .bookmark-list-container {
+  background-color: #f5e7d0; /* Slightly lighter sepia for bookmark list */
+  color: #5b4636;
+  border-top: 1px solid #d3c0a5;
+}
+.reader-view-wrapper.reader-appearance-sepia .bookmark-list-container h4 {
+  color: #5b4636;
+}
+.reader-view-wrapper.reader-appearance-sepia .bookmark-item {
+  color: #5b4636;
+  border-bottom: 1px solid #d3c0a5;
+}
+.reader-view-wrapper.reader-appearance-sepia .bookmark-link {
+  color: #8a5a44; /* Example link color for sepia */
+}
+.reader-view-wrapper.reader-appearance-sepia .bookmark-link .timestamp,
+.reader-view-wrapper.reader-appearance-sepia .loading-bookmarks p,
+.reader-view-wrapper.reader-appearance-sepia .no-bookmarks p,
+.reader-view-wrapper.reader-appearance-sepia .highlighted-text-preview {
+  color: #7a6352;
+}
+.reader-view-wrapper.reader-appearance-sepia .delete-bookmark-btn {
+  color: #7a6352;
+}
+.reader-view-wrapper.reader-appearance-sepia .delete-bookmark-btn:hover {
+  color: #d32f2f;
+  background-color: rgba(91, 70, 54, 0.1);
+}
+.reader-view-wrapper.reader-appearance-sepia .bookmark-item:hover {
+  background-color: rgba(91, 70, 54, 0.07);
+}
+
+/* Dark Reader Appearance */
+.reader-view-wrapper.reader-appearance-dark_reader {
+  background-color: #1e1e1e; /* Dark background for the entire reader area */
+  color: #ffffff; /* Pure white default text color for readability */
+}
+
+/* Ensure reader-content-area also uses this theme */
+.reader-view-wrapper.reader-appearance-dark_reader .reader-content-area {
+  background-color: #1e1e1e; /* Explicitly dark */
+  color: #ffffff; /* Pure white text for content area */
+}
+
+/* Styles for BookMeta within Dark reader appearance */
+.reader-view-wrapper.reader-appearance-dark_reader .book-meta-reader {
+  background-color: #1e1e1e; /* Match reader background */
+}
+.reader-view-wrapper.reader-appearance-dark_reader .book-meta-reader h2,
+.reader-view-wrapper.reader-appearance-dark_reader .book-meta-reader .author {
+  color: #ffffff; /* Pure white for title and author */
+}
+
+/* Styles for reader actions (Back to Library, Bookmark) for better readability */
+.reader-view-wrapper.reader-appearance-dark_reader .reader-actions .back-button,
+.reader-view-wrapper.reader-appearance-dark_reader .reader-actions .bookmark-button {
+  color: #ffffff; /* Pure white, readable text for buttons */
+}
+
+/* Styles for BookmarkList within Dark reader appearance */
+.reader-view-wrapper.reader-appearance-dark_reader .bookmark-list-container {
+  background-color: #2c2c2c; /* Slightly lighter dark for bookmark list */
+  color: #ffffff; /* Pure white text for bookmark list */
+  border-top: 1px solid #3a3a3a;
+}
+.reader-view-wrapper.reader-appearance-dark_reader .bookmark-list-container h4 {
+  color: #ffffff; /* Pure white for bookmark title */
+}
+.reader-view-wrapper.reader-appearance-dark_reader .bookmark-item {
+  color: #ffffff; /* Pure white text for bookmark items */
+  border-bottom: 1px solid #3a3a3a;
+}
+.reader-view-wrapper.reader-appearance-dark_reader .bookmark-link {
+  color: #82caff; /* Light blue for links, good contrast on dark */
+}
+.reader-view-wrapper.reader-appearance-dark_reader .bookmark-link .timestamp,
+.reader-view-wrapper.reader-appearance-dark_reader .loading-bookmarks p,
+.reader-view-wrapper.reader-appearance-dark_reader .no-bookmarks p,
+.reader-view-wrapper.reader-appearance-dark_reader .highlighted-text-preview {
+  color: #cccccc; /* Slightly dimmer for less prominent text */
+}
+.reader-view-wrapper.reader-appearance-dark_reader .delete-bookmark-btn {
+  color: #cccccc; /* Consistent with other less prominent text */
+}
+.reader-view-wrapper.reader-appearance-dark_reader .delete-bookmark-btn:hover {
+  color: #ff8a8a; /* Lighter red for dark mode hover */
+  background-color: rgba(255, 255, 255, 0.1);
+}
+.reader-view-wrapper.reader-appearance-dark_reader .bookmark-item:hover {
+  background-color: rgba(255, 255, 255, 0.07);
+}
+
+/* Styles for text selection within each theme to ensure visibility */
+.reader-view-wrapper.reader-appearance-white ::selection {
+  background-color: var(--dynamic-highlight-bg-color, #fff176); /* Default to yellow if var not set */
+  color: #000000; /* Black text for light selections */
+}
+
+.reader-view-wrapper.reader-appearance-sepia ::selection {
+  background-color: var(--dynamic-highlight-bg-color, #fff176);
+  color: #000000; /* Black text for light selections */
+}
+
+.reader-view-wrapper.reader-appearance-dark_reader ::selection {
+  background-color: var(--dynamic-highlight-bg-color, #fff176);
+  color: #000000; /* Black text for light selections */
+}
+
+/* Highlighted span styles based on theme */
+.reader-view-wrapper.reader-appearance-white .highlighted-text {
+  background-color: var(--dynamic-highlight-bg-color, #fff176);
+  color: #000000; /* Ensure text is readable over highlight */
+}
+
+.reader-view-wrapper.reader-appearance-sepia .highlighted-text {
+  background-color: var(--dynamic-highlight-bg-color, #fff176);
+  color: #000000; 
+}
+
+.reader-view-wrapper.reader-appearance-dark_reader .highlighted-text {
+  background-color: var(--dynamic-highlight-bg-color, #fff176);
+  color: #000000;
+} 

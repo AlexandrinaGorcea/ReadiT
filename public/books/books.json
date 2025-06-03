@@ -1,0 +1,27 @@
+[
+  {
+    "id": "the-mind-of-a-leader",
+    "title": "The Mind of a Leader",
+    "author": "Kevin Anderson",
+    "year": 2024,
+    "coverImage": "/images/covers/the-mind-of-a-leader-cover.jpg",
+    "filePath": "/books/the-mind-of-a-leader.json",
+    "description": "How to Lead Yourself, Your People & Your Organization for Extraordinary Results. (Note: This book needs to be converted to the new page-based JSON format)"
+  },
+  {
+    "id": "romeo-and-juliet",
+    "title": "Romeo and Juliet",
+    "author": "William Shakespeare",
+    "year": 1597,
+    "coverImage": "/images/covers/romeo-and-juliet-cover.jpg",
+    "filePath": "/books/romeo-and-juliet.json"
+  },
+  {
+    "id": "alices-adventures-in-wonderland",
+    "title": "Alice's Adventures in Wonderland",
+    "author": "Lewis Carroll",
+    "year": 1865,
+    "coverImage": "/images/covers/alices-adventures-in-wonderland-cover.jpg",
+    "filePath": "/books/alices-adventures-in-wonderland.json"
+  }
+] 

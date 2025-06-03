@@ -18,11 +18,11 @@
           <template v-if="bookmark.type === 'highlight' && bookmark.highlightedText">
             <span class="bookmark-icon highlight-icon">&#128396;</span>
             <q class="highlighted-text-preview">{{ truncateText(bookmark.highlightedText, 50) }}</q>
-            <small class="timestamp">(P{{ bookmark.paragraphIndex + 1 }} - {{ formatTimestamp(bookmark.createdAt) }})</small>
+            <small class="timestamp">(P{{ (bookmark.paragraphIndex || 0) + 1 }} - {{ formatTimestamp(bookmark.createdAt) }})</small>
           </template>
           <template v-else>
             <span class="bookmark-icon">&#128278;</span>
-            Paragraph {{ bookmark.paragraphIndex + 1 }} 
+            Paragraph {{ (bookmark.paragraphIndex || 0) + 1 }} 
             <small class="timestamp">({{ formatTimestamp(bookmark.createdAt) }})</small>
           </template>
         </span>
@@ -43,7 +43,9 @@ const bookmarkStore = useBookmarkStore();
 const emit = defineEmits(['navigate-to-paragraph']);
 
 function goToBookmark(paragraphIndex) {
-  emit('navigate-to-paragraph', paragraphIndex);
+  if (typeof paragraphIndex === 'number') {
+    emit('navigate-to-paragraph', paragraphIndex);
+  }
 }
 
 async function removeBookmark(bookmarkId) {

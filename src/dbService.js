@@ -44,7 +44,15 @@ export const dbService = {
       const store = tx.objectStore(READING_STATES_STORE);
       const state = await store.get(bookId);
       await tx.done;
-      return state; // { bookId, paragraphIndex, lastUpdated }
+      // Expect { bookId, paragraphIndex, lastUpdated } or null
+      // If state has pageIndex but not paragraphIndex, it's from the newer system and incompatible for now.
+      if (state && state.hasOwnProperty('pageIndex') && !state.hasOwnProperty('paragraphIndex')) {
+        // In a revert scenario, we might want to return null or a default paragraphIndex state
+        // to force re-evaluation based on localStorage or start from beginning.
+        console.warn(`Reading state for ${bookId} is in page-format; reverting to paragraph-based will ignore this DB state.`);
+        return null; 
+      }
+      return state; // Should contain paragraphIndex if saved with reverted logic
     } catch (error) {
       console.error(`Error getting reading state for ${bookId}:`, error);
       return null;
@@ -52,7 +60,7 @@ export const dbService = {
   },
 
   async saveReadingState(bookId, paragraphIndex) {
-    if (!bookId) return;
+    if (!bookId || typeof paragraphIndex !== 'number') return;
     try {
       const db = await getDbPromise();
       const tx = db.transaction(READING_STATES_STORE, 'readwrite');
@@ -64,7 +72,7 @@ export const dbService = {
       };
       await store.put(state);
       await tx.done;
-      console.log(`Saved reading state for ${bookId} to IndexedDB: p${paragraphIndex}`);
+      console.log(`Saved reading state for ${bookId} to IndexedDB: paragraph ${paragraphIndex}`);
     } catch (error) {
       console.error(`Error saving reading state for ${bookId}:`, error);
     }
@@ -94,6 +102,11 @@ export const dbService = {
         type: bookmarkData.type || 'bookmark',
         createdAt: new Date().toISOString(),
       };
+      // Ensure paragraphIndex is present if it's a new bookmark from reverted logic
+      if (typeof bookmarkData.paragraphIndex !== 'number') {
+        console.warn('Adding bookmark without paragraphIndex:', bookmarkData);
+        // Depending on strictness, could throw error or allow if it's old data being re-processed
+      }
       const id = await store.add(bookmark);
       await tx.done;
       console.log(`Bookmark added with id ${id} for book ${bookmarkData.bookId}`);
@@ -113,7 +126,16 @@ export const dbService = {
       const index = store.index('by-bookId');
       const bookmarks = await index.getAll(bookId);
       await tx.done;
-      return bookmarks.sort((a, b) => a.paragraphIndex - b.paragraphIndex);
+      // Sort by paragraphIndex, then by startOffset for highlights within the same paragraph
+      return bookmarks.sort((a, b) => {
+        const paragraphDiff = (a.paragraphIndex || 0) - (b.paragraphIndex || 0);
+        if (paragraphDiff !== 0) return paragraphDiff;
+        // If paragraphIndex is the same, sort by startOffset (for highlights)
+        if (a.type === 'highlight' && b.type === 'highlight') {
+          return (a.startOffset || 0) - (b.startOffset || 0);
+        }
+        return 0;
+      });
     } catch (error) {
       console.error(`Error getting bookmarks for ${bookId}:`, error);
       return [];

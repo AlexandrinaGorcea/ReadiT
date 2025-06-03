@@ -67,9 +67,9 @@ const filteredBooks = computed(() => {
 });
 
 onMounted(async () => {
-  if (bookStore.books.length === 0) {
-    await bookStore.fetchBookManifest();
-  }
+  // Always fetch the manifest when the library is mounted
+  // to ensure it's up-to-date.
+  await bookStore.fetchBookManifest();
 });
 
 function navigateToBook(bookId) {

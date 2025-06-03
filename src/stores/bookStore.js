@@ -7,8 +7,8 @@ export const useBookStore = defineStore('book', {
   state: () => ({
     books: [], // List of available books from manifest
     selectedBookId: null,
-    currentBookData: null, // Full data of the selected book
-    currentParagraphIndex: 0, // Add this for scroll position
+    currentBookData: null, // Full data of the selected book { ..., paragraphs: ["text1", "text2", ...] }
+    currentParagraphIndex: 0, // Reverted from currentPageIndex
     isLoadingManifest: false,
     isLoadingBook: false,
     manifestError: null,
@@ -16,6 +16,20 @@ export const useBookStore = defineStore('book', {
   }),
   getters: {
     isBookSelected: (state) => !!state.selectedBookId && !!state.currentBookData,
+    currentBookParagraphs: (state) => {
+      return state.currentBookData && Array.isArray(state.currentBookData.paragraphs) 
+        ? state.currentBookData.paragraphs 
+        : [];
+    },
+    currentParagraphText: (state) => {
+      if (state.currentBookParagraphs.length > state.currentParagraphIndex) {
+        return state.currentBookParagraphs[state.currentParagraphIndex];
+      }
+      return ''; // Return empty string if index is out of bounds or no paragraphs
+    },
+    totalParagraphs: (state) => {
+      return state.currentBookParagraphs.length;
+    }
   },
   actions: {
     async fetchBookManifest() {
@@ -33,33 +47,35 @@ export const useBookStore = defineStore('book', {
     },
     async selectBook(bookId) {
       if (this.selectedBookId === bookId && this.currentBookData) {
-        // Book already selected, ensure scroll position is from most reliable source
-        await this.restoreProgressFromDB(bookId); // Prioritize DB for re-selection
+        await this.restoreProgressFromDB(bookId);
         return;
       }
 
-      // If switching from another book, save its progress to DB
       if (this.selectedBookId && this.currentBookData && this.selectedBookId !== bookId) {
-        const lastKnownIndex = parseInt(localStorage.getItem(`readit-progress-${this.selectedBookId}`) || this.currentParagraphIndex.toString(), 10);
-        await dbService.saveReadingState(this.selectedBookId, lastKnownIndex);
-        // Clear bookmarks for the old book
+        // Save progress for the old book (paragraph-based)
+        const lastKnownIndex = parseInt(localStorage.getItem(`readit-paragraph-progress-${this.selectedBookId}`) || this.currentParagraphIndex.toString(), 10);
+        await dbService.saveReadingState(this.selectedBookId, lastKnownIndex); // dbService will need to expect paragraphIndex
         const bookmarkStore = useBookmarkStore();
         bookmarkStore.clearCurrentBookBookmarks();
       }
 
       this.selectedBookId = bookId;
       this.currentBookData = null;
-      this.currentParagraphIndex = 0; // Default, will be overridden by DB/LS
+      this.currentParagraphIndex = 0; 
       this.isLoadingBook = true;
       this.bookError = null;
 
       try {
         const bookData = await BookService.loadBookById(bookId);
-        this.currentBookData = bookData;
-        await this.restoreProgressFromDB(bookId); // Restore progress for the newly selected book
-        // Load bookmarks for the newly selected book
+        this.currentBookData = bookData; 
+        // Ensure currentBookData.paragraphs is an array
+        if (!this.currentBookData || !Array.isArray(this.currentBookData.paragraphs)) {
+            console.error('Book data loaded is not in the expected paragraph-based format:', this.currentBookData);
+            throw new Error('Book data is not in the expected paragraph-based format.');
+        }
+        await this.restoreProgressFromDB(bookId); 
         const bookmarkStore = useBookmarkStore();
-        await bookmarkStore.loadBookmarks(bookId);
+        await bookmarkStore.loadBookmarks(bookId); 
       } catch (err) {
         console.error(`Failed to load book ${bookId} in store:`, err);
         this.bookError = `Failed to load book: ${err.message || 'Unknown error'}`;
@@ -70,62 +86,78 @@ export const useBookStore = defineStore('book', {
     },
     async deselectBook() {
       if (this.selectedBookId && this.currentBookData) {
-        // Save final progress from LocalStorage (most up-to-date for session) to IndexedDB
-        const lastKnownIndex = parseInt(localStorage.getItem(`readit-progress-${this.selectedBookId}`) || this.currentParagraphIndex.toString(), 10);
-        await dbService.saveReadingState(this.selectedBookId, lastKnownIndex);
-        localStorage.removeItem(`readit-progress-${this.selectedBookId}`); // Clear LS for this book
+        const lastKnownIndex = parseInt(localStorage.getItem(`readit-paragraph-progress-${this.selectedBookId}`) || this.currentParagraphIndex.toString(), 10);
+        await dbService.saveReadingState(this.selectedBookId, lastKnownIndex); // dbService will need to expect paragraphIndex
+        localStorage.removeItem(`readit-paragraph-progress-${this.selectedBookId}`);
       }
       this.selectedBookId = null;
       this.currentBookData = null;
       this.currentParagraphIndex = 0;
       this.bookError = null;
-      // Clear bookmarks when no book is selected
       const bookmarkStore = useBookmarkStore();
       bookmarkStore.clearCurrentBookBookmarks();
     },
 
-    // LocalStorage for frequent updates within a session
     saveProgressToLocalStorage(bookId, paragraphIndex) {
       if (!bookId) return;
-      localStorage.setItem(`readit-progress-${bookId}`, paragraphIndex.toString());
-      this.currentParagraphIndex = paragraphIndex; // Keep reactive store in sync
+      localStorage.setItem(`readit-paragraph-progress-${bookId}`, paragraphIndex.toString());
+      this.currentParagraphIndex = paragraphIndex;
     },
 
-    // Restore from LocalStorage (primarily for immediate UI reactivity within session)
     restoreProgressFromLocalStorage(bookId) {
       if (!bookId) return 0;
-      const savedIndex = localStorage.getItem(`readit-progress-${bookId}`);
+      const savedIndex = localStorage.getItem(`readit-paragraph-progress-${bookId}`);
       const index = savedIndex ? parseInt(savedIndex, 10) : 0;
-      this.currentParagraphIndex = index;
+      // Validate index against total paragraphs if possible, or do it in restoreProgressFromDB
+      this.currentParagraphIndex = index; 
       return index;
     },
 
-    // Restore from IndexedDB (primary source for starting a session or new book)
     async restoreProgressFromDB(bookId) {
       if (!bookId) {
         this.currentParagraphIndex = 0;
         return 0;
       }
-      const state = await dbService.getReadingState(bookId);
+      const state = await dbService.getReadingState(bookId); // dbService needs to return paragraphIndex
       let index = 0;
-      if (state) {
+      if (state && typeof state.paragraphIndex === 'number') { // Check for paragraphIndex
         index = state.paragraphIndex;
-        console.log(`Restored p${index} for ${bookId} from DB.`);
+        console.log(`Restored paragraph ${index} for ${bookId} from DB.`);
       } else {
-        // If not in DB, try LocalStorage (e.g., if session wasn't cleanly ended)
         index = this.restoreProgressFromLocalStorage(bookId);
-        console.log(`Restored p${index} for ${bookId} from LS (DB miss).`);
+        console.log(`Restored paragraph ${index} for ${bookId} from LS (DB miss or old format).`);
+      }
+      
+      // Ensure index is valid for the loaded book
+      if (this.currentBookData && this.currentBookData.paragraphs && index >= this.currentBookData.paragraphs.length) {
+        console.warn(`Restored paragraph index ${index} is out of bounds for book ${bookId}. Resetting to 0.`);
+        index = 0;
       }
       this.currentParagraphIndex = index;
-      // Ensure LocalStorage is also updated if DB had a more definitive value
-      localStorage.setItem(`readit-progress-${bookId}`, index.toString()); 
+      localStorage.setItem(`readit-paragraph-progress-${bookId}`, index.toString()); 
       return index;
     },
 
-    // Called by ReaderView on scroll/interaction
     updateReadingProgress(bookId, paragraphIndex) {
-        this.currentParagraphIndex = paragraphIndex;
-        this.saveProgressToLocalStorage(bookId, paragraphIndex); // Frequent save to LS
+        if (this.currentBookData && this.currentBookData.paragraphs && paragraphIndex >= 0 && paragraphIndex < this.currentBookData.paragraphs.length) {
+          this.currentParagraphIndex = paragraphIndex;
+          this.saveProgressToLocalStorage(bookId, paragraphIndex);
+        } else {
+            console.warn(`Attempted to update to invalid paragraph index: ${paragraphIndex}.`);
+        }
+    },
+
+    goToParagraph(paragraphIndex) {
+      if (this.currentBookData && this.currentBookData.paragraphs) {
+        const totalParagraphs = this.currentBookData.paragraphs.length;
+        if (paragraphIndex >= 0 && paragraphIndex < totalParagraphs) {
+          this.currentParagraphIndex = paragraphIndex;
+          this.saveProgressToLocalStorage(this.selectedBookId, paragraphIndex);
+          // No need to call updateReadingProgress as saveProgressToLocalStorage handles the state and LS update
+        } else {
+          console.warn(`Attempted to navigate to invalid paragraph index: ${paragraphIndex}. Total paragraphs: ${totalParagraphs}`);
+        }
+      }
     }
   },
 }); 
