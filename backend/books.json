@@ -1,0 +1,47 @@
+[
+  {
+    "id": "pride-and-prejudice",
+    "title": "Pride and Prejudice",
+    "author": "Jane Austen",
+    "year": 1813,
+    "coverImage": "/images/covers/pride-and-prejudice-cover.jpg",
+    "description": "A classic novel by Jane Austen.",
+    "tags": ["classic", "romance", "fiction"]
+  },
+  {
+    "id": "romeo-and-juliet",
+    "title": "Romeo and Juliet",
+    "author": "William Shakespeare",
+    "year": 1597,
+    "coverImage": "/images/covers/romeo-and-juliet-cover.jpg",
+    "description": "A tragic play by William Shakespeare.",
+    "tags": ["classic", "tragedy", "play", "fiction"]
+  },
+  {
+    "id": "the-hobbit",
+    "title": "The Hobbit",
+    "author": "J.R.R. Tolkien",
+    "year": 1937,
+    "coverImage": "/images/covers/the-hobbit-cover.jpg",
+    "description": "A fantasy novel by J.R.R. Tolkien.",
+    "tags": ["fantasy", "adventure", "fiction"]
+  },
+  {
+    "id": "1984",
+    "title": "Nineteen Eighty-Four",
+    "author": "George Orwell",
+    "year": 1949,
+    "coverImage": "/images/covers/1984-cover.jpg",
+    "description": "A dystopian social science fiction novel and cautionary tale.",
+    "tags": ["dystopian", "sci-fi", "classic", "fiction"]
+  },
+  {
+    "id": "a-journey-to-the-unknown",
+    "title": "A Journey to the Unknown",
+    "author": "Alex Writer",
+    "year": 2024,
+    "coverImage": "/images/covers/book-1-cover.jpg",
+    "description": "An adventurous journey into the unknown.",
+    "tags": ["adventure", "modern", "fiction"]
+  }
+] 
