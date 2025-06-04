@@ -133,11 +133,12 @@ ReadiT is a web-based application designed for an enhanced ebook reading experie
 
 ## Deployment
 
-(Details on how to deploy the frontend and backend can be added here once decided, e.g., Vercel for frontend, Heroku/Render for backend.)
+[Netlify](https://683f254574aba722767ab7de--readit-book.netlify.app/)
 
 ## Security Features
 
-(To be detailed - e.g., input validation, CORS configuration. If user authentication is added, mention JWT, password hashing etc.)
+- JWT token
+- Access Management
 
 ## Learn More
 
