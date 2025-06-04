@@ -133,7 +133,7 @@ ReadiT is a web-based application designed for an enhanced ebook reading experie
 
 ## Deployment
 
-[Netlify](https://683f254574aba722767ab7de--readit-book.netlify.app/)
+[ReadiT Website](https://683f254574aba722767ab7de--readit-book.netlify.app/)
 
 ## Security Features
 
